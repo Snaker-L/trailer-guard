@@ -1045,8 +1045,10 @@ PAGE = r"""<!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TrailerGuard</title>
 <style>
-:root{--bg:#f4f5f7;--card:#fff;--fg:#1d2330;--mute:#6b7280;--line:#e3e6ea;--acc:#2563eb;--ok:#15803d;--warn:#b45309;--bad:#b91c1c;--chip:#eef1f5}
-@media(prefers-color-scheme:dark){:root{--bg:#12151b;--card:#1b2029;--fg:#e6e9ef;--mute:#9aa3b2;--line:#2b323e;--acc:#60a5fa;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--chip:#252c38}}
+:root{color-scheme:light;--bg:#f4f5f7;--card:#fff;--fg:#1d2330;--mute:#6b7280;--line:#e3e6ea;--acc:#2563eb;--ok:#15803d;--warn:#b45309;--bad:#b91c1c;--chip:#eef1f5}
+:root[data-theme=dark]{color-scheme:dark;--bg:#12151b;--card:#1b2029;--fg:#e6e9ef;--mute:#9aa3b2;--line:#2b323e;--acc:#60a5fa;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--chip:#252c38}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--bg:#12151b;--card:#1b2029;--fg:#e6e9ef;--mute:#9aa3b2;--line:#2b323e;--acc:#60a5fa;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--chip:#252c38}}
+.themeBtn{min-width:96px}.loginTop{display:flex;justify-content:space-between;align-items:center}
 *{box-sizing:border-box}body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--fg)}
 header{display:flex;align-items:center;gap:12px;padding:12px 20px;background:var(--card);border-bottom:1px solid var(--line);flex-wrap:wrap}
 header h1{font-size:18px;margin:0;margin-right:auto}
@@ -1084,10 +1086,13 @@ a{color:var(--acc)}.mute{color:var(--mute)}
 .prog{height:6px;background:var(--chip);border-radius:3px;overflow:hidden;margin-top:8px}.prog i{display:block;height:100%;background:var(--acc)}
 .hidden{display:none!important}.qr{background:#fff;padding:6px;border-radius:8px;display:inline-block}
 code{background:var(--chip);padding:2px 6px;border-radius:4px;word-break:break-all}
-</style></head><body>
+</style>
+<script>try{const t=localStorage.getItem('tg-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
+</head><body>
 
 <div id="loginView" class="hidden"><div class="login card">
-  <h1>TrailerGuard</h1><p class="mute" id="loginSub">Anmelden</p>
+  <div class="loginTop"><h1>TrailerGuard</h1><button type="button" class="btn themeBtn" onclick="cycleTheme()"></button></div>
+  <p class="mute" id="loginSub">Anmelden</p>
   <form id="loginForm" autocomplete="on">
     <div id="lfCreds"><label>Benutzername</label><input id="lUser" autocomplete="username" required>
     <label>Passwort</label><input id="lPw" type="password" autocomplete="current-password" required>
@@ -1112,6 +1117,7 @@ code{background:var(--chip);padding:2px 6px;border-radius:4px;word-break:break-a
 
 <div id="appView" class="hidden">
 <header><h1>TrailerGuard</h1><span id="mode" class="badge"></span><span class="mute" id="who"></span>
+<button class="btn themeBtn" onclick="cycleTheme()"></button>
 <button class="btn" onclick="logout()">Abmelden</button></header>
 <nav id="tabs"></nav>
 <main>
@@ -1206,6 +1212,14 @@ code{background:var(--chip);padding:2px 6px;border-radius:4px;word-break:break-a
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let me={},tab='Übersicht',logSeq=0,timer=null,mode='login';
+// ---- Darstellung: Automatisch (wie das System) -> Hell -> Dunkel
+const THEMES={auto:'◐ Auto',light:'☀ Hell',dark:'☾ Dunkel'};
+function getTheme(){try{return localStorage.getItem('tg-theme')||'auto'}catch(e){return'auto'}}
+function setTheme(t){const r=document.documentElement;if(t==='auto')delete r.dataset.theme;else r.dataset.theme=t;
+  try{localStorage.setItem('tg-theme',t)}catch(e){}
+  document.querySelectorAll('.themeBtn').forEach(b=>{b.textContent=THEMES[t];b.title='Darstellung: '+THEMES[t].slice(2)+' – klicken zum Wechseln'})}
+function cycleTheme(){const o=Object.keys(THEMES);setTheme(o[(o.indexOf(getTheme())+1)%o.length])}
+setTheme(getTheme());
 const DEFAULT_BAD=%BAD%;
 function toast(m,err){const t=$('#toast');t.textContent=m;t.className=err?'err':'';t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',err?6000:3000)}
 async function api(p,body){
