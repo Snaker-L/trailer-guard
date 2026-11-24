@@ -34,8 +34,9 @@ Unter `http://<server>:8097`:
 
 ## Installation
 
+Fertige Images (amd64 und arm64) baut GitHub bei jedem Push auf `main`: `ghcr.io/snaker-l/trailer-guard:latest`. Versions-Tags `v1.2.3` ergeben zusätzlich `:1.2.3`.
+
 ```sh
-docker build -t trailer-guard .
 docker run -d --name trailer-guard --restart unless-stopped \
   -p 8097:8097 \
   -v /pfad/zu/state:/state \
@@ -43,8 +44,10 @@ docker run -d --name trailer-guard --restart unless-stopped \
   -e TRAILARR_URL=http://trailarr:7889 \
   -e TRAILARR_API_KEY=... \
   -e TMDB_API_KEY=... \
-  trailer-guard
+  ghcr.io/snaker-l/trailer-guard:latest
 ```
+
+Selbst bauen: `docker build -t trailer-guard .` und dann `trailer-guard` als Image angeben.
 
 Die Mediendateien müssen unter **demselben Pfad** eingebunden sein wie bei Trailarr, weil TrailerGuard die Pfade aus der Trailarr-API direkt verwendet. Das Volume `/state` enthält Prüfstatus, Einstellungen und Zugangsdaten und muss erhalten bleiben.
 
